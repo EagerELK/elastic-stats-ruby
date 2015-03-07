@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'eager/stats/ks'
+require 'webmock'
 
 describe Eager::Stats::KS do
   it 'has an array of indices' do
@@ -31,37 +32,40 @@ describe Eager::Stats::KS do
     expect(ks.field).to eq '@mytimefield'
   end
 
-  it 'fetches the KS difference and other stats' do
-    WebMock.stub_request(:get, 'http://localhost:9200/fake/_search').
-      to_return(
-        body: fixture('successful_search.json'),
-        headers: {'Content-Type' => 'text/json' }
-      )
+  context 'fetch' do
+    subject do
+      WebMock.stub_request(:get, 'http://localhost:9200/fake/_search').
+        to_return(
+          body: fixture('successful_search.json'),
+          headers: {'Content-Type' => 'text/json' }
+        )
 
-    ks = Eager::Stats::KS.new('fake')
-    ks.client_options = {
-      url: 'http://localhost:9200',
-      log: false
-    }
-    result = ks.fetch
-
-    expect(result).to have_key :difference
-    expect(result).to have_key :different?
-    expect(result).to have_key :confidence
-    expect(result).to have_key :check
-  end
-
-  it 'buiilds the search query correctly'
-
-  fit 'calculates the KS difference' do
-    ENV['ELASTICSEARCH_URL'] = 'https://kibana:Open%20kibana!@search.tutuka.com:443'
-    ks_stats = Eager::Stats::KS.new('logstash-2015.03.05')
-    ks_stats.client_options = {
-      transport_options: {
-        ssl: { verify: false }
+      ks = Eager::Stats::KS.new('fake')
+      ks.client_options = {
+        url: 'http://localhost:9200',
+        log: false
       }
-    }
-    puts ks_stats.fetch.inspect
-    puts ks_stats.inspect
+      ks.fetch
+    end
+
+    it 'fetches the KS difference stat' do
+      expect(subject).to have_key :difference
+      expect(subject[:difference]).to eq 0
+    end
+
+    it 'fetches the KS different boolean' do
+      expect(subject).to have_key :different?
+      expect(subject[:different?]).to be false
+    end
+
+    it 'fetches the KS confidence level' do
+      expect(subject).to have_key :confidence
+      expect(subject[:confidence]).to eq 0.05
+    end
+
+    it 'fetches the KS comparison value' do
+      expect(subject).to have_key :comparison
+      expect(subject[:comparison]).to eq 0.9616652224137048
+    end
   end
 end
