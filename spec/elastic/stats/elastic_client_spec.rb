@@ -16,7 +16,6 @@ describe Elastic::Stats::ElasticClient do
   end
 
   it 'has sane default options' do
-    puts ENV.inspect['ELASTICSEARCH_URL']
     expect(subject.client_options).to eq(
       url: ENV['ELASTICSEARCH_URL']
     )
