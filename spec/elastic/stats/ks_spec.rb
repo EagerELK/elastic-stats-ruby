@@ -1,19 +1,20 @@
 require 'spec_helper'
-require 'eager/stats/ks'
+require 'elastic/stats/ks'
 require 'webmock'
 
-describe Eager::Stats::KS do
+
+describe Elastic::Stats::KS do
   it 'has an array of indices' do
-    ks = Eager::Stats::KS.new('logstash-2015.12.12')
+    ks = Elastic::Stats::KS.new('logstash-2015.12.12')
     expect(ks.indices).to be_a Array
   end
 
   it 'has sane defaults' do
-    ks = Eager::Stats::KS.new('logstash-2015.12.12')
+    ks = Elastic::Stats::KS.new('logstash-2015.12.12')
     now = Time.new
     expect(ks.to).to be_within(2).of(now.to_i)
-    expect(ks.from).to eq ks.to - (60 * 60)
-    expect(ks.interval).to eq '1m'
+    expect(ks.from).to eq ks.to - (60 * 60 * 12)
+    expect(ks.interval).to eq '1h'
     expect(ks.field).to eq '@timestamp'
   end
 
@@ -25,7 +26,7 @@ describe Eager::Stats::KS do
       interval: '5m',
       field: '@mytimefield'
     }
-    ks = Eager::Stats::KS.new('logstash-2015.12.12', options)
+    ks = Elastic::Stats::KS.new('logstash-2015.12.12', options)
     expect(ks.to).to eq now.to_i
     expect(ks.from).to eq (ks.to.to_i - (60 * 60 * 24))
     expect(ks.interval).to eq '5m'
@@ -40,7 +41,7 @@ describe Eager::Stats::KS do
           headers: {'Content-Type' => 'text/json' }
         )
 
-      ks = Eager::Stats::KS.new('fake')
+      ks = Elastic::Stats::KS.new('fake')
       ks.client_options = {
         url: 'http://localhost:9200',
         log: false

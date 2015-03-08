@@ -1,6 +1,6 @@
-require "eager/stats/version"
+require "elastic/stats/version"
 
-module Eager
+module Elastic
   module Stats
     # Your code goes here...
   end

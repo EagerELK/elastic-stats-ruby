@@ -1,5 +1,6 @@
 require 'bundler/setup'
 Bundler.setup
+
 #require 'webmock/rspec'
 require 'helpers/utility'
 

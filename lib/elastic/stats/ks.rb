@@ -1,12 +1,15 @@
-require 'hashie'
-require 'elasticsearch'
+require 'elastic/stats/elastic_client'
+require 'elastic/stats/ranged'
 require 'statsample'
 
-module Eager
+module Elastic
   module Stats
     class KS
+      include ElasticClient
+      include Ranged
+
       attr_accessor :logger
-      attr_writer :client, :client_options, :debug, :query
+      attr_writer :debug, :query
       attr_reader :indices, :to, :from, :span, :interval, :field
 
       MULTIPLIERS = {
@@ -18,13 +21,14 @@ module Eager
         0.10 => 1.22
       }
 
+
       # indices should include all possible indices.
       def initialize(indices, options = {})
         @indices  = indices
 
         @to       = options.delete(:to)       || Time.new.to_i
-        @span     = options.delete(:span)     || (60 * 60)
-        @interval = options.delete(:interval) || '1m'
+        @span     = options.delete(:span)     || (60 * 60 * 12)
+        @interval = options.delete(:interval) || '1h'
         @field    = options.delete(:field)    || '@timestamp'
         @offset   = options.delete(:offset)   || (60 * 60 * 24 * 7)
 
@@ -49,12 +53,6 @@ module Eager
         }
       end
 
-      def range(from, to)
-        Hashie::Mash.new(
-          client.search index: indices.join(','), body: query(from, to)
-        ).aggregations.hits_per_minute.buckets.collect(&:doc_count)
-      end
-
       def query(from, to)
         @query = Hashie::Mash.new
         @query.aggregations!.hits_per_minute!.date_histogram = {
@@ -69,18 +67,6 @@ module Eager
         @query
       end
 
-      def client
-        @client ||= Elasticsearch::Client.new client_options
-      end
-
-      def client_options
-        @client_options ||= {
-          url: ENV['ELASTICSEARCH_URL'],
-          log: debug?,
-          logger: logger,
-          request_body: true,
-        }
-      end
 
       def debug?
         @debug ||= ENV['DEBUG']
