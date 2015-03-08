@@ -26,8 +26,8 @@ describe Elastic::Stats::KS do
       field: '@mytimefield'
     }
     ks = Elastic::Stats::KS.new('logstash-2015.12.12', options)
-    expect(ks.to).to eq now.to_i
-    expect(ks.from).to eq(ks.to.to_i - (60 * 60 * 24))
+    expect(ks.to).to eq now
+    expect(ks.from).to eq(ks.to - (60 * 60 * 24))
     expect(ks.interval).to eq '5m'
     expect(ks.field).to eq '@mytimefield'
   end
@@ -66,6 +66,22 @@ describe Elastic::Stats::KS do
     it 'fetches the KS comparison value' do
       expect(subject).to have_key :comparison
       expect(subject[:comparison]).to eq 0.9616652224137048
+    end
+  end
+
+  context 'query' do
+    it 'has no default query' do
+      ks = Elastic::Stats::KS.new('logstash-2015.12.12')
+
+      expect(ks.query).to be_nil
+    end
+
+    it 'allows for the query to be set' do
+      ks = Elastic::Stats::KS.new('logstash-2015.12.12')
+      query = { 'term' => { 'user' => 'eagerelk' } }
+      ks.query = query
+
+      expect(ks.query).to eq query
     end
   end
 end

@@ -9,7 +9,7 @@ module Elastic
     class KS
       include ElasticClient
 
-      attr_accessor :logger
+      attr_accessor :logger, :query
       attr_reader :indices, :to, :from, :span, :interval, :field
 
       MULTIPLIERS = {
@@ -33,8 +33,7 @@ module Elastic
         @field    = options.delete(:field)
         @offset   = options.delete(:offset)
 
-        @indices = [indices]  unless @indices.is_a? Array
-        @to      = @to.to_i   if @to.respond_to?(:to_i)
+        @indices = [indices] unless @indices.is_a? Array
         @from    = @to - @span
       end
 
@@ -62,25 +61,31 @@ module Elastic
         )
       end
 
+      private
+
       def range(from, to)
         Hashie::Mash.new(
-          client.search index: indices.join(','), body: query(from, to)
+          client.search index: indices.join(','), body: body(from, to)
         ).aggregations.hits_per_minute.buckets.collect(&:doc_count)
       end
 
-      def query(from, to)
-        @query = Hashie::Mash.new
-        @query.aggregations!.hits_per_minute!.date_histogram = {
+      def body(from, to)
+        body = Hashie::Mash.new
+        body.query = query if query
+        body.aggregations!.hits_per_minute!.date_histogram = aggregate(from, to)
+        body
+      end
+
+      private
+
+      def aggregate(from, to)
+        {
           field: field, interval: interval, min_doc_count: 0,
           extended_bounds: {
             min: (from * 1000),
             max:   (to * 1000)
           }
         }
-        @query
-      end
-
-      def query=(_query)
       end
 
       private
