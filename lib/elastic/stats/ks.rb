@@ -4,6 +4,8 @@ require 'statsample'
 
 module Elastic
   module Stats
+    # Utility to determine the KolmogorovSmirnov difference between to sets of
+    # data fetched from Elasticsearch
     class KS
       include ElasticClient
 
@@ -20,16 +22,17 @@ module Elastic
         0.10 => 1.22
       }
 
-
       # indices should include all possible indices.
       def initialize(indices, options = {})
         @indices  = indices
 
-        @to       = options.delete(:to)       || Time.new.to_i
-        @span     = options.delete(:span)     || (60 * 60 * 12)
-        @interval = options.delete(:interval) || '1h'
-        @field    = options.delete(:field)    || '@timestamp'
-        @offset   = options.delete(:offset)   || (60 * 60 * 24 * 7)
+        options = default_options.update(options)
+
+        @to       = options.delete(:to)
+        @span     = options.delete(:span)
+        @interval = options.delete(:interval)
+        @field    = options.delete(:field)
+        @offset   = options.delete(:offset)
 
         @indices = [indices]  unless @indices.is_a? Array
         @to      = @to.to_i   if @to.respond_to?(:to_i)
@@ -40,16 +43,24 @@ module Elastic
         current  = range(@from, @to)
         previous = range(@from - @offset, @to - @offset)
 
-        difference = Statsample::Test::KolmogorovSmirnov.new(current, previous).d
+        difference = Statsample::Test::KolmogorovSmirnov.new(
+          current, previous
+        ).d
 
-        comparison = MULTIPLIERS[confidence] * Math.sqrt(
-          ((current.count + previous.count).to_f / (current.count * previous.count))
-        )
-
+        comparison = calculate(current, previous, confidence)
         {
           confidence: confidence, comparison: comparison,
           difference: difference, different?: (difference > comparison)
         }
+      end
+
+      def calculate(current, previous, confidence)
+        MULTIPLIERS[confidence] * Math.sqrt(
+          (
+            (current.count + previous.count).to_f /
+            (current.count * previous.count)
+          )
+        )
       end
 
       def range(from, to)
@@ -61,9 +72,7 @@ module Elastic
       def query(from, to)
         @query = Hashie::Mash.new
         @query.aggregations!.hits_per_minute!.date_histogram = {
-          field: field,
-          interval: interval,
-          min_doc_count: 0,
+          field: field, interval: interval, min_doc_count: 0,
           extended_bounds: {
             min: (from * 1000),
             max:   (to * 1000)
@@ -74,6 +83,18 @@ module Elastic
 
       def debug?
         @debug ||= ENV['DEBUG']
+      end
+
+      private
+
+      def default_options
+        {
+          to: Time.new.to_i,
+          span: (60 * 60 * 12),
+          interval: '1h',
+          field: '@timestamp',
+          offset: (60 * 60 * 24 * 7)
+        }
       end
     end
   end

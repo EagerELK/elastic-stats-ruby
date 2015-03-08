@@ -2,7 +2,6 @@ require 'spec_helper'
 require 'elastic/stats/ks'
 require 'webmock'
 
-
 describe Elastic::Stats::KS do
   it 'has an array of indices' do
     ks = Elastic::Stats::KS.new('logstash-2015.12.12')
@@ -28,17 +27,17 @@ describe Elastic::Stats::KS do
     }
     ks = Elastic::Stats::KS.new('logstash-2015.12.12', options)
     expect(ks.to).to eq now.to_i
-    expect(ks.from).to eq (ks.to.to_i - (60 * 60 * 24))
+    expect(ks.from).to eq(ks.to.to_i - (60 * 60 * 24))
     expect(ks.interval).to eq '5m'
     expect(ks.field).to eq '@mytimefield'
   end
 
   context 'fetch' do
     subject do
-      WebMock.stub_request(:get, 'http://localhost:9200/fake/_search').
-        to_return(
+      WebMock.stub_request(:get, 'http://localhost:9200/fake/_search')
+        .to_return(
           body: fixture('successful_search.json'),
-          headers: {'Content-Type' => 'text/json' }
+          headers: { 'Content-Type' => 'text/json' }
         )
 
       ks = Elastic::Stats::KS.new('fake')

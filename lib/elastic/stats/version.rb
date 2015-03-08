@@ -1,5 +1,6 @@
 module Elastic
+  # Utility to calculate stats using Elasticsearch as the backend
   module Stats
-    VERSION = "0.0.1"
+    VERSION = '0.0.1'
   end
 end

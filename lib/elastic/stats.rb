@@ -1,7 +1,7 @@
-require "elastic/stats/version"
+require 'elastic/stats/version'
 
 module Elastic
+  # Utility to calculate stats using Elasticsearch as the backend
   module Stats
-    # Your code goes here...
   end
 end

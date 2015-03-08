@@ -2,6 +2,7 @@ require 'elasticsearch'
 
 module Elastic
   module Stats
+    # Module to set up and manage the Elasticsearch client
     module ElasticClient
       attr_writer :client
 
@@ -18,6 +19,7 @@ module Elastic
       end
 
       private
+
       def default_options
         {
           url: ENV['ELASTICSEARCH_URL']

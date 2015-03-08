@@ -1,7 +1,7 @@
 require 'bundler/setup'
 Bundler.setup
 
-#require 'webmock/rspec'
+# require 'webmock/rspec'
 require 'helpers/utility'
 
 RSpec.configure do |config|
@@ -9,5 +9,5 @@ RSpec.configure do |config|
   config.filter_run focus: true
   config.run_all_when_everything_filtered = true
 
-  #config.after(:suite) { WebMock.disable! }
+  # config.after(:suite) { WebMock.disable! }
 end

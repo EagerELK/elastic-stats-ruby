@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'elastic/stats/elastic_client'
 
+# Testing class for the Elastic::Stats::ElasticClient module
 class ElasticClientTest
   include Elastic::Stats::ElasticClient
 end
@@ -29,11 +30,12 @@ describe Elastic::Stats::ElasticClient do
     logger = Object.new
     options  = {
       debug: true,
-      logger: logger,
+      logger: logger
     }
     subject.client_options = options
 
-    expect(subject.client_options).to eq options.merge(url: ENV['ELASTICSEARCH_URL'])
+    options.update(url: ENV['ELASTICSEARCH_URL'])
+    expect(subject.client_options).to eq options
   end
 
   it 'allows the default client options to be overriden' do
@@ -47,5 +49,4 @@ describe Elastic::Stats::ElasticClient do
 
     expect(subject.client_options).to eq options
   end
-
 end
