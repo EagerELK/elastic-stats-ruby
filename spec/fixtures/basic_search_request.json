@@ -1,0 +1,1 @@
+{"aggregations": {"hits_per_minute": {"date_histogram": {"extended_bounds": {"max": 1424785374000,"min": 1424781774000},"field": "@timestamp","interval": "1m","min_doc_count": 0}}},"query": {"filtered": {"filter": {"bool": {"must": [{"range": {"@timestamp": {"from": 1424781774000,"to": 1424785374000}}}]}}}},"size": 0}
