@@ -18,7 +18,29 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+~~~
+require 'elastic/stats/ks'
+require 'logger'
+
+# Set the URL
+ENV['ELASTICSEARCH_URL'] = 'https://test.eagerelk.com/'
+# This is perfect for logstash stats
+stats = Elastic::Stats::KS.new 'logstash-2015.03.05'
+# Set some client options to enable logging and debugging
+stats.client_options = {
+  debug: true,
+  logger: Logger.new(STDOUT),
+  request_body: true,
+  transport_options: {
+    ssl: { verify: false }
+  }
+}
+# Add extra filters to the query
+stats.query = { filtered: { filter: { fquery: { query: { query_string:{ query: "type:(\"crimson_db\")"}}}}}}
+
+# Fetch and output the stats
+puts stats.fetch.inspect
+~~~
 
 ## Contributing
 
