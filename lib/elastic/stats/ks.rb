@@ -1,12 +1,11 @@
 require 'elastic/stats/elastic_client'
-require 'elastic/stats/ranged'
+require 'hashie'
 require 'statsample'
 
 module Elastic
   module Stats
     class KS
       include ElasticClient
-      include Ranged
 
       attr_accessor :logger
       attr_writer :debug, :query
@@ -53,6 +52,12 @@ module Elastic
         }
       end
 
+      def range(from, to)
+        Hashie::Mash.new(
+          client.search index: indices.join(','), body: query(from, to)
+        ).aggregations.hits_per_minute.buckets.collect(&:doc_count)
+      end
+
       def query(from, to)
         @query = Hashie::Mash.new
         @query.aggregations!.hits_per_minute!.date_histogram = {
@@ -66,7 +71,6 @@ module Elastic
         }
         @query
       end
-
 
       def debug?
         @debug ||= ENV['DEBUG']
