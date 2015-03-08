@@ -10,7 +10,6 @@ module Elastic
       include ElasticClient
 
       attr_accessor :logger
-      attr_writer :debug, :query
       attr_reader :indices, :to, :from, :span, :interval, :field
 
       MULTIPLIERS = {
@@ -81,8 +80,7 @@ module Elastic
         @query
       end
 
-      def debug?
-        @debug ||= ENV['DEBUG']
+      def query=(_query)
       end
 
       private
