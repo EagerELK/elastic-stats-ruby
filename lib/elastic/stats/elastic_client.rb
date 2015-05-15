@@ -5,6 +5,7 @@ module Elastic
     # Module to set up and manage the Elasticsearch client
     module ElasticClient
       attr_writer :client
+      attr_accessor :index, :type
 
       def client
         @client ||= Elasticsearch::Client.new client_options
@@ -16,6 +17,14 @@ module Elastic
 
       def client_options=(options = {})
         client_options.update(options)
+      end
+
+      def search(options = {})
+        client.search({ index: index, type: type }.merge(options))
+      end
+
+      def analyze(options = {})
+        client.indices.analyze({ index: index, type: type }.merge(options))
       end
 
       private

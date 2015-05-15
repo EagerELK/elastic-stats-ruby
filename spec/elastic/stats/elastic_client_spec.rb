@@ -8,44 +8,61 @@ end
 
 describe Elastic::Stats::ElasticClient do
   subject { ElasticClientTest.new }
-  it 'allows the client to be set' do
-    client = Object.new
-    subject.client = client
 
-    expect(subject.client).to be client
+  context '#client' do
+    it 'allows the client to be set' do
+      client = Object.new
+      subject.client = client
+
+      expect(subject.client).to be client
+    end
   end
 
-  it 'has sane default options' do
-    expect(subject.client_options).to eq(
-      url: ENV['ELASTICSEARCH_URL']
-    )
+  context '#client_options' do
+    it 'has sane default options' do
+      expect(subject.client_options).to eq(
+        url: ENV['ELASTICSEARCH_URL']
+      )
+    end
+
+    it 'allows the client options to be retrieved' do
+      expect(subject.client_options).to eq(url: ENV['ELASTICSEARCH_URL'])
+    end
   end
 
-  it 'allows the client options to be retrieved' do
-    expect(subject.client_options).to eq(url: ENV['ELASTICSEARCH_URL'])
+  context '#client_options=' do
+    it 'allows the default client options to be added' do
+      logger = Object.new
+      options  = {
+        debug: true,
+        logger: logger
+      }
+      subject.client_options = options
+
+      options.update(url: ENV['ELASTICSEARCH_URL'])
+      expect(subject.client_options).to eq options
+    end
+
+    it 'allows the default client options to be overriden' do
+      logger = Object.new
+      options  = {
+        debug: true,
+        logger: logger,
+        url: 'http://mytesturl.com:9200/'
+      }
+      subject.client_options = options
+
+      expect(subject.client_options).to eq options
+    end
   end
 
-  it 'allows the default client options to be added' do
-    logger = Object.new
-    options  = {
-      debug: true,
-      logger: logger
-    }
-    subject.client_options = options
-
-    options.update(url: ENV['ELASTICSEARCH_URL'])
-    expect(subject.client_options).to eq options
+  context '#search' do
+    it 'sends a search request using the specified type and index'
+    it 'sends a search request using the passed in options'
   end
 
-  it 'allows the default client options to be overriden' do
-    logger = Object.new
-    options  = {
-      debug: true,
-      logger: logger,
-      url: 'http://mytesturl.com:9200/'
-    }
-    subject.client_options = options
-
-    expect(subject.client_options).to eq options
+  context '#analyze' do
+    it 'sends an analyze request using the specified type and index'
+    it 'sends an analyze request using the passed in options'
   end
 end
