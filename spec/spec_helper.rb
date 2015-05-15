@@ -1,8 +1,9 @@
 require 'codeclimate-test-reporter'
 require 'helpers/utility'
 require 'bundler/setup'
-Bundler.setup
+require 'webmock/rspec'
 
+Bundler.setup
 CodeClimate::TestReporter.start
 
 RSpec.configure do |config|

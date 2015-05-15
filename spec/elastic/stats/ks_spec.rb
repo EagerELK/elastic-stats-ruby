@@ -1,6 +1,5 @@
 require 'spec_helper'
 require 'elastic/stats/ks'
-require 'webmock'
 
 describe Elastic::Stats::KS do
   it 'has an array of indices' do
@@ -33,6 +32,14 @@ describe Elastic::Stats::KS do
   end
 
   context 'fetch' do
+    before(:all) do
+      WebMock.enable!
+    end
+
+    after(:all) do
+      WebMock.disable!
+    end
+
     subject do
       WebMock.stub_request(:get, 'http://localhost:9200/fake/_search')
         .to_return(
