@@ -43,7 +43,11 @@ module Elastic
         def bayes(category)
           return 0 if count == 0
           return 0 if (probability(category) + inverse(category)) == 0
-          probability(category) / (probability(category) + inverse(category))
+          adjust(probability(category) / (probability(category) + inverse(category)))
+        end
+
+        def adjust(probability, weight = 1, target = 0.5)
+          ((weight * target) + (count * probability)) / (1 + count)
         end
       end
     end
