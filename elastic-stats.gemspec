@@ -28,4 +28,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'hashie'
   spec.add_runtime_dependency 'statsample'
   spec.add_runtime_dependency 'elasticsearch'
+  spec.add_runtime_dependency 'flt'
 end
