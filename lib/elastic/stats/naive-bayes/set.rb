@@ -18,23 +18,26 @@ module Elastic
         end
 
         def count
-          init_stats unless defined? @count
+          init_stats if @count.nil?
           @count
         end
 
         def categories
-          init_stats unless defined? @categories
+          init_stats if @categories.nil?
           @categories
         end
 
         def tokens
-          init_caches unless defined? @tokens
-          @tokens
+          @tokens ||= Hash.new { |h, k| h[k] = count_search[k]['hits']['total'] }
         end
 
         def token_categories
-          init_caches unless defined? @token_categories
-          @token_categories
+          @token_categories ||= Hash.new do |h, k|
+            result = count_search[k]['aggregations']['counts']['buckets'].map do |bucket|
+              { bucket['key'] => bucket['doc_count'] }
+            end
+            h[k] = Hash.new(0).merge(result.reduce(:merge))
+          end
         end
 
         def tokenize(subject)
@@ -67,22 +70,8 @@ module Elastic
 
         private
 
-        def init_caches
-          @tokens ||= Hash.new { |h, k| h[k] = initialize_token(k) }
-
-          @token_categories ||= Hash.new { |h, k| h[k] = initialize_token(k) }
-        end
-
-        private
-
-        def initialize_token(token)
-          result = search search_type: 'count', body: token_query(token)
-
-          @tokens[token] = result['hits']['total']
-          result = result['aggregations']['counts']['buckets'].map do |bucket|
-            { bucket['key'] => bucket['doc_count'] }
-          end
-          Hash.new(0).merge(result.reduce(:merge))
+        def count_search
+          @count_search ||= Hash.new{ |h, k| h[k] = search search_type: 'count', body: token_query(k) }
         end
 
         private
@@ -104,7 +93,8 @@ module Elastic
 
         def token_query(token)
           body = Hashie::Mash.new
-          body.query!.filtered!.filter!.term!.description = token
+          body.query!.filtered!.filter!.term!
+          body.query.filtered.filter.term[subject_field] = token
           body.merge aggregation
         end
       end

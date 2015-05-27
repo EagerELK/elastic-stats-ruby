@@ -12,13 +12,11 @@ module Elastic
 
         # Returns the number of documents that contains the token
         def count
-          return 0 unless set.tokens.has_key? token
           set.tokens[token]
         end
 
         # Returns the categories associated with the token in the set as a Hash
         def categories
-          return {} unless set.token_categories.has_key? token
           set.token_categories[token]
         end
 

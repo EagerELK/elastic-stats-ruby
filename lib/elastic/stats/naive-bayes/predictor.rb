@@ -34,7 +34,8 @@ module Elastic
         end
 
         def tokenize(subject)
-          prior_set.tokenize subject
+          @tokenize ||= Hash.new { |h, k| h[k] = prior_set.tokenize k }
+          @tokenize[subject]
         end
       end
     end
