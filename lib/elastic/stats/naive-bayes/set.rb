@@ -8,18 +8,50 @@ module Elastic
       class Set
         include ElasticClient
 
-        attr_reader :category_field, :subject_field
-        attr_reader :count, :categories, :tokens, :token_categories
+        attr_reader :category_field, :subject_field, :index, :type
 
         def initialize(index, type, category_field, subject_field)
           @index = index
           @type = type
           @category_field = category_field
           @subject_field = subject_field
-
-          init_stats
-          init_caches
         end
+
+        def count
+          init_stats unless defined? @count
+          @count
+        end
+
+        def categories
+          init_stats unless defined? @categories
+          @categories
+        end
+
+        def tokens
+          init_caches unless defined? @tokens
+          @tokens
+        end
+
+        def token_categories
+          init_caches unless defined? @token_categories
+          @token_categories
+        end
+
+        def tokenize(subject)
+          results = analyze field: subject_field, text: subject
+          results['tokens'].collect { |x| x['token'] }
+        end
+
+        # Elasticsearch client helper methods
+        def search(options = {})
+          client.search({ index: index, type: type }.merge(options))
+        end
+
+        def analyze(options = {})
+          client.indices.analyze({ index: index }.merge(options))
+        end
+
+        private
 
         def init_stats
           results = Hashie::Mash.new(
@@ -33,15 +65,12 @@ module Elastic
           @categories = @categories.reduce(:merge)
         end
 
+        private
+
         def init_caches
           @tokens ||= Hash.new { |h, k| h[k] = initialize_token(k) }
 
           @token_categories ||= Hash.new { |h, k| h[k] = initialize_token(k) }
-        end
-
-        def tokenize(subject)
-          results = analyze field: subject_field, text: subject
-          results['tokens'].collect { |x| x['token'] }
         end
 
         private
