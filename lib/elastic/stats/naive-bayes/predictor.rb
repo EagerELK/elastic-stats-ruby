@@ -20,7 +20,7 @@ module Elastic
           prior_set.categories.keys.each do |category|
             scores[category] = score(subject, category)
           end
-          scores
+          Hash[scores.sort_by { |label, score| -score }]
         end
 
         def score(subject, category)
