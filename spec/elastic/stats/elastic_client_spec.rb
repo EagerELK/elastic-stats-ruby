@@ -55,14 +55,4 @@ describe Elastic::Stats::ElasticClient do
       expect(subject.client_options).to eq options
     end
   end
-
-  context '#search' do
-    it 'sends a search request using the specified type and index'
-    it 'sends a search request using the passed in options'
-  end
-
-  context '#analyze' do
-    it 'sends an analyze request using the specified type and index'
-    it 'sends an analyze request using the passed in options'
-  end
 end

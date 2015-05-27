@@ -7,6 +7,8 @@ describe Elastic::Stats::NaiveBayes::Set do
   end
 
   context '#tokens' do
-    it 'works'
+    it 'returns an array of tokens from the given string' do
+      expect(subject.tokenize('one two three')).to eq(['one', 'two', 'three'])
+    end
   end
 end

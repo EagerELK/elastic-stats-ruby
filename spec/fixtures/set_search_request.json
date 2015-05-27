@@ -1,0 +1,1 @@
+{"aggs":{"counts":{"terms":{"field":"category","size":200}}}}
