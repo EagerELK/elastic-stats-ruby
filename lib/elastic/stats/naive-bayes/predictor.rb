@@ -25,12 +25,10 @@ module Elastic
 
         def score(subject, category)
           # Calculate the propability for each token in this category
-          log_sum = tokenize(subject).reduce(0) do |sum, token|
+          tokenize(subject).reduce(0) do |sum, token|
             stats = TokenStats.new(token, prior_set)
             sum + stats.bayes(category)
           end
-
-          1 / (1 + Math.exp(log_sum))
         end
 
         def tokenize(subject)

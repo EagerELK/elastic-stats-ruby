@@ -1,7 +1,12 @@
+require 'flt'
+include Flt
+
 module Elastic
   module Stats
     module NaiveBayes
       # Provide statistics about a token in a specific set of data
+      # See http://burakkanber.com/blog/machine-learning-naive-bayes-1/ for an
+      # explanation around the maths contained in this class
       class TokenStats
         attr_reader :token, :set
 
@@ -20,43 +25,25 @@ module Elastic
           set.token_categories[token]
         end
 
-        # Returns the probability that a token is in the specified category
+        # Returns the probability that a token is in the specified category as a DecNum
         def probability(category)
           return 0 unless categories.has_key? category
           return 0 if set.categories[category] == 0
-          categories[category] / set.categories[category].to_f
+          DecNum(categories[category]) / DecNum(set.categories[category])
         end
 
-        # Returns the inverse probability that a token is in the category
+        # Returns the inverse probability that a token is in the category as a DecNum
         def inverse(category)
           return 0 unless categories.has_key? category
           return 0 if (set.count - set.categories[category]) == 0
-          (count - categories[category]) / \
-            (set.count - set.categories[category]).to_f
+          DecNum(count - categories[category]) / DecNum(set.count - set.categories[category])
         end
 
+        # Returns the Bayes probability as a DecNum
         def bayes(category)
           return 0 if count == 0
           return 0 if (probability(category) + inverse(category)) == 0
-          calculated = log_protect(
-            probability(category) / (probability(category) + inverse(category))
-          )
-          adjust(calculated)
-          Math.log(1 - calculated) - Math.log(calculated)
-        end
-
-        private
-
-        def adjust(probability, weight = 1, target = 0.5)
-          ((weight * target) + (count * probability)) / (1 + count)
-        end
-
-        private
-
-        def log_protect(probability)
-          return 0.0001 if probability == 0
-          return 0.9999 if probability == 1
-          probability
+          probability(category) / (probability(category) + inverse(category))
         end
       end
     end
