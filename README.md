@@ -1,7 +1,5 @@
 # Elastic::Stats
 
-TODO: Write a gem description
-
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -17,6 +15,8 @@ Or install it yourself as:
     $ gem install elastic-stats
 
 ## Usage
+
+### KS
 
 ~~~
 require 'elastic/stats/ks'
@@ -41,6 +41,10 @@ stats.query = { filtered: { filter: { fquery: { query: { query_string:{ query: "
 # Fetch and output the stats
 puts stats.fetch.inspect
 ~~~
+
+### Naive Bayes Filter
+
+TODO
 
 ## Contributing
 
