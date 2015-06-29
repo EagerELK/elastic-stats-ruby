@@ -17,11 +17,13 @@ module Elastic
           @subject_field = subject_field
         end
 
+        # The number of documents in the set
         def count
           init_stats if @count.nil?
           @count
         end
 
+        # All the categories with their number of documents in the set
         def categories
           init_stats if @categories.nil?
           @categories
@@ -40,7 +42,14 @@ module Elastic
           end
         end
 
+        # Get all the tokens from the subject
         def tokenize(subject)
+          # TODO: If we want to differentiate between multinominal and bernoulli
+          # We need to specify what analyzer to use. multinominal does not worry
+          # about uniqueness, whilst bernoulli does
+          # Also:
+          # Multin: Prob(Ti|C) = number of occurrences of Ti in C. So non unique
+          # Bernoulli: Prob(Ti|C) = number of documents in C containing Ti
           results = analyze field: subject_field, text: subject
           results['tokens'].collect { |x| x['token'] }
         end

@@ -1,13 +1,15 @@
+# Read through http://www.cs.nyu.edu/faculty/davise/ai/bayesText.html
 module Elastic
   module Stats
     module NaiveBayes
       # Provide statistics about a token in a specific set of data
       class TokenStats
-        attr_reader :token, :set
+        attr_reader :token, :set, :document
 
-        def initialize(token, set)
+        def initialize(token, set, document)
           @token = token
           @set = set
+          @document = document
         end
 
         # Returns the number of documents that contains the token
@@ -20,35 +22,33 @@ module Elastic
           set.token_categories[token]
         end
 
-        # Returns the probability that a token is in the specified category
+        # Returns all the words in the document |V|
+        def set_tokens
+          set.tokenize(document).count
+        end
+
+        # Returns the probability with laplace smoothing - Pr(W|S)
+        def probability(category, smooth = 1)
+          if smooth.nil?
+            categories[category]) / (set.categories[category].to_f
+          else
+            (smooth + categories[category]) / (set.categories[category].to_f + set_tokens + smooth)
+          end
+        end
+
+        # Returns the probability that a token is in the specified category - Pr(W|S)
         def probability(category)
-          return 0 unless categories.has_key? category
-          return 0 if set.categories[category] == 0
+          return 0.0 unless categories.has_key? category
+          return 0.0 if set.categories[category] == 0
           categories[category] / set.categories[category].to_f
         end
 
-        # Returns the inverse probability that a token is in the category
+        # Returns the inverse probability that a token is in the category - Pr(W|H)
         def inverse(category)
-          return 0 unless categories.has_key? category
-          return 0 if (set.count - set.categories[category]) == 0
+          return 0.0 unless categories.has_key? category
+          return 0.0 if (set.count - set.categories[category]) == 0
           (count - categories[category]) / \
             (set.count - set.categories[category]).to_f
-        end
-
-        def bayes(category)
-          return 0 if count == 0
-          return 0 if (probability(category) + inverse(category)) == 0
-          calculated = log_protect(
-            probability(category) / (probability(category) + inverse(category))
-          )
-          adjust(calculated)
-          Math.log(1 - calculated) - Math.log(calculated)
-        end
-
-        private
-
-        def adjust(probability, weight = 1, target = 0.5)
-          ((weight * target) + (count * probability)) / (1 + count)
         end
 
         private

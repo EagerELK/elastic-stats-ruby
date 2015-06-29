@@ -26,7 +26,7 @@ module Elastic
         def score(subject, category)
           # Calculate the propability for each token in this category
           log_sum = tokenize(subject).reduce(0) do |sum, token|
-            stats = TokenStats.new(token, prior_set)
+            stats = TokenStats.new(token, prior_set, subject)
             sum + stats.bayes(category)
           end
 
@@ -34,6 +34,7 @@ module Elastic
         end
 
         def tokenize(subject)
+          # TODO: Using a whole document as a hash key is probably a bad idea. Maybe just hash it?
           @tokenize ||= Hash.new { |h, k| h[k] = prior_set.tokenize k }
           @tokenize[subject]
         end
